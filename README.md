@@ -15,3 +15,11 @@ Appen støtter kun inneværende år for øyeblikket.
 Eksempel:
 
 `go run . oktober.json`
+
+```
+Usage: 498.09 kWh, Peak hour: 3.53 kWh
+Sum old model: kr 341.24
+Sum new model: kr 361.83
+Diff: kr 20.587380 +6.03 %
+
+```
