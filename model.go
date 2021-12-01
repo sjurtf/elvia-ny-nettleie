@@ -20,8 +20,8 @@ type Day struct {
 }
 
 type Hour struct {
-	Hour string
-	Id string
+	Hour        string
+	Id          string
 	Consumption Consumption
 }
 
