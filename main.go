@@ -148,7 +148,7 @@ func calculateNewModel(data *elvia.Data) Result {
 
 			for _, day := range month.Days {
 
-				date := fmt.Sprintf("%s-%s-%s", data.Years[0].Year, month.Month, day.Day)
+				date := fmt.Sprintf("%s-%s-%s", year.Year, month.Month, day.Day)
 				t, err := time.Parse("2006-01-02", date)
 				if err != nil {
 					fmt.Println(err)
