@@ -25,6 +25,8 @@ func main() {
 		os.Exit(1)
 	}
 
+	totalConsumption := totalConsumption(data)
+
 	old := calculateOldModel(data)
 	new, maxkWh := calculateNewModel(data)
 
@@ -34,11 +36,19 @@ func main() {
 		symbol = "+"
 	}
 
-	fmt.Printf("Usage: %s kWh, Peak hour: %.2f kWh\n", "382.71", maxkWh)
+	fmt.Printf("Usage: %.2f kWh, Peak hour: %.2f kWh\n", totalConsumption, maxkWh)
 	fmt.Printf("Sum old model: kr %.2f\n", old)
 	fmt.Printf("Sum new model: kr %.2f\n", new)
 	fmt.Printf("Diff: kr %f %s%.2f %%\n", new-old, symbol, percentChange)
 
+}
+
+func totalConsumption(data *Data) float64 {
+	c := 0.0
+	for _, year := range data.Years {
+		c = c + year.Consumption.Value
+	}
+	return c
 }
 
 const (
