@@ -88,12 +88,11 @@ func CalculateNewModel(data *elvia.Data) Result {
 	for _, year := range data.Years {
 		var months []Month
 		for _, month := range year.Months {
-			price := 0.0
-			kWhCounted := 0.0
+			cost := 0.0
+			kWh := 0.0
 			m := Month{}
 
 			for _, day := range month.Days {
-
 				date := fmt.Sprintf("%s-%s-%s", year.Year, month.Month, day.Day)
 				t, err := time.Parse("2006-01-02", date)
 				if err != nil {
@@ -112,41 +111,18 @@ func CalculateNewModel(data *elvia.Data) Result {
 				}
 
 				for _, hour := range day.Hours {
-
 					if hour.Consumption.Value > m.MaxKWh {
 						m.MaxKWh = hour.Consumption.Value
 					}
 
-					h, _ := strconv.Atoi(hour.Hour)
+					c, k := hourCost(isWeekend, summer, hour)
 
-					if isWeekend {
-						if summer {
-							price = price + (hour.Consumption.Value * elvia.NewEnergyNight)
-						} else {
-							price = price + (hour.Consumption.Value * elvia.NewEnergyNightWinter)
-						}
-						kWhCounted = kWhCounted + hour.Consumption.Value
-					} else if h >= 22 || (h >= 0 && h <= 6) {
-						if summer {
-							price = price + (hour.Consumption.Value * elvia.NewEnergyNight)
-						} else {
-							price = price + (hour.Consumption.Value * elvia.NewEnergyNightWinter)
-						}
-						kWhCounted = kWhCounted + hour.Consumption.Value
-					} else {
-						if summer {
-							price = price + (hour.Consumption.Value * elvia.NewEnergyDay)
-						} else {
-							price = price + (hour.Consumption.Value * elvia.NewEnergyDayWinter)
-						}
-						kWhCounted = kWhCounted + hour.Consumption.Value
-					}
+					cost = cost + c
+					kWh = kWh + k
 				}
 			}
-			m.UsageTierCost = findConstPriceTier(m.MaxKWh)
-			m.Usage = kWhCounted
-			m.TotalCost = (price / 100) + m.UsageTierCost
-
+			m.Usage = kWh
+			m.TotalCost = (cost / 100) + constPriceTier(m.MaxKWh)
 			months = append(months, m)
 		}
 
@@ -157,7 +133,39 @@ func CalculateNewModel(data *elvia.Data) Result {
 	return Result{Years: years}
 }
 
-func findConstPriceTier(maxKWh float64) float64 {
+func hourCost(isWeekend bool, summer bool, hour elvia.Hour) (float64, float64) {
+	h, _ := strconv.Atoi(hour.Hour)
+
+	cost := 0.0
+	kWh := 0.0
+	if isWeekend {
+		if summer {
+			cost = hour.Consumption.Value * elvia.NewEnergyNight
+		} else {
+			cost = hour.Consumption.Value * elvia.NewEnergyNightWinter
+		}
+		kWh = hour.Consumption.Value
+
+	} else if h >= 22 || (h >= 0 && h <= 6) {
+		if summer {
+			cost = hour.Consumption.Value * elvia.NewEnergyNight
+		} else {
+			cost = hour.Consumption.Value * elvia.NewEnergyNightWinter
+		}
+		kWh = hour.Consumption.Value
+
+	} else {
+		if summer {
+			cost = hour.Consumption.Value * elvia.NewEnergyDay
+		} else {
+			cost = hour.Consumption.Value * elvia.NewEnergyDayWinter
+		}
+		kWh = hour.Consumption.Value
+	}
+	return cost, kWh
+}
+
+func constPriceTier(maxKWh float64) float64 {
 	if maxKWh > 15 {
 		return elvia.NewConstPriceTier4NOK
 	} else if maxKWh > 10 {
