@@ -16,9 +16,8 @@ Eksempel:
 `go run . oktober.json`
 
 ```
-Usage: 498.09 kWh, Peak hour: 3.53 kWh
-Sum old model: kr 341.24
-Sum new model: kr 361.83
-Diff: kr 20.587380 +6.03 %
-
+Usage: 1337.43 kWh - Peak hour 3.23 kWh
+Sum old model: kr 338.15
+Sum new model: kr 364.48
+Diff: kr 26.323590 +7.78 %
 ```
