@@ -17,7 +17,7 @@ Eksempel:
 
 ```
 Usage: 1337.43 kWh - Peak hour 3.23 kWh
-Sum old model: kr 338.15
-Sum new model: kr 364.48
-Diff: kr 26.323590 +7.78 %
+Sum old model: 338.15 kr
+Sum new model: 364.48 kr
+Diff: 26.32 kr +7.78 %
 ```

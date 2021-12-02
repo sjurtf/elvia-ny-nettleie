@@ -40,9 +40,9 @@ func main() {
 	}
 
 	fmt.Printf("Usage: %.2f kWh - Peak hour %.2f kWh\n", totalConsumption, newResults.GetPeakPower())
-	fmt.Printf("Sum old model: kr %.2f\n", oldCost)
-	fmt.Printf("Sum new model: kr %.2f\n", newCost)
-	fmt.Printf("Diff: kr %f %s%.2f %%\n", newCost-oldCost, symbol, percentChange)
+	fmt.Printf("Sum old model: %.2f kr\n", oldCost)
+	fmt.Printf("Sum new model: %.2f kr\n", newCost)
+	fmt.Printf("Diff: %.2f kr %s%.2f %%\n", newCost-oldCost, symbol, percentChange)
 
 }
 
