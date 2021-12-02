@@ -11,6 +11,9 @@ const (
 	OldEnergy      = 44.80
 	NewEnergyDay   = 37.35
 	NewEnergyNight = 31.10 // also weekends
+
+	NewEnergyDayWinter   = 41.70
+	NewEnergyNightWinter = 29.20
 )
 
 type Data struct {

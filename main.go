@@ -81,8 +81,8 @@ func main() {
 
 	totalConsumption := totalConsumption(data)
 
-	oldResults := calculateOldModel(data)
-	newResults := calculateNewModel(data)
+	oldResults := CalculateOldModel(data)
+	newResults := CalculateNewModel(data)
 
 	oldCost := oldResults.GetCost()
 	newCost := newResults.GetCost()
@@ -108,7 +108,7 @@ func totalConsumption(data *elvia.Data) float64 {
 	return c
 }
 
-func calculateOldModel(data *elvia.Data) Result {
+func CalculateOldModel(data *elvia.Data) Result {
 	var years []Year
 
 	for _, year := range data.Years {
@@ -137,7 +137,7 @@ func calculateOldModel(data *elvia.Data) Result {
 	return Result{Years: years}
 }
 
-func calculateNewModel(data *elvia.Data) Result {
+func CalculateNewModel(data *elvia.Data) Result {
 	var years []Year
 	for _, year := range data.Years {
 		var months []Month
@@ -160,18 +160,12 @@ func calculateNewModel(data *elvia.Data) Result {
 					isWeekend = true
 				}
 
+				summer := false
+				if t.Month() >= 4 && t.Month() <= 10 {
+					summer = true
+				}
+
 				for _, hour := range day.Hours {
-					if hour.Consumption.Value > 2 {
-						m.UsageTierCost = elvia.NewConstPriceTier0NOK
-					} else if hour.Consumption.Value > 5 {
-						m.UsageTierCost = elvia.NewConstPriceTier1NOK
-					} else if hour.Consumption.Value > 10 {
-						m.UsageTierCost = elvia.NewConstPriceTier2NOK
-					} else if hour.Consumption.Value > 15 {
-						m.UsageTierCost = elvia.NewConstPriceTier3NOK
-					} else if hour.Consumption.Value > 20 {
-						m.UsageTierCost = elvia.NewConstPriceTier4NOK
-					}
 
 					if hour.Consumption.Value > m.MaxKWh {
 						m.MaxKWh = hour.Consumption.Value
@@ -180,20 +174,33 @@ func calculateNewModel(data *elvia.Data) Result {
 					h, _ := strconv.Atoi(hour.Hour)
 
 					if isWeekend {
-						price = price + (hour.Consumption.Value * elvia.NewEnergyNight)
+						if summer {
+							price = price + (hour.Consumption.Value * elvia.NewEnergyNight)
+						} else {
+							price = price + (hour.Consumption.Value * elvia.NewEnergyNightWinter)
+						}
 						kWhCounted = kWhCounted + hour.Consumption.Value
 					} else if h >= 22 || (h >= 0 && h <= 6) {
-						price = price + (hour.Consumption.Value * elvia.NewEnergyNight)
+						if summer {
+							price = price + (hour.Consumption.Value * elvia.NewEnergyNight)
+						} else {
+							price = price + (hour.Consumption.Value * elvia.NewEnergyNightWinter)
+						}
 						kWhCounted = kWhCounted + hour.Consumption.Value
 					} else {
-						price = price + (hour.Consumption.Value * elvia.NewEnergyDay)
+						if summer {
+							price = price + (hour.Consumption.Value * elvia.NewEnergyDay)
+						} else {
+							price = price + (hour.Consumption.Value * elvia.NewEnergyDayWinter)
+						}
 						kWhCounted = kWhCounted + hour.Consumption.Value
 					}
 				}
 			}
-
+			m.UsageTierCost = findConstPriceTier(m.MaxKWh)
 			m.Usage = kWhCounted
 			m.TotalCost = (price / 100) + m.UsageTierCost
+
 			months = append(months, m)
 		}
 
@@ -202,4 +209,17 @@ func calculateNewModel(data *elvia.Data) Result {
 	}
 
 	return Result{Years: years}
+}
+
+func findConstPriceTier(maxKWh float64) float64 {
+	if maxKWh > 15 {
+		return elvia.NewConstPriceTier4NOK
+	} else if maxKWh > 10 {
+		return elvia.NewConstPriceTier3NOK
+	} else if maxKWh > 5 {
+		return elvia.NewConstPriceTier2NOK
+	} else if maxKWh > 2 {
+		return elvia.NewConstPriceTier1NOK
+	}
+	return elvia.NewConstPriceTier0NOK
 }
